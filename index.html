@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Detection</title>
+</head>
+<body>
+    <h1>Face Detection</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="capture">Capture Photo</button>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <button id="upload">Upload Photo</button>
+    <div id="result"></div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const resultDiv = document.getElementById('result');
+
+        // Access the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error('Error accessing webcam: ', err);
+            });
+
+        // Capture the photo
+        document.getElementById('capture').addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        });
+
+        // Upload the photo
+        document.getElementById('upload').addEventListener('click', () => {
+            const dataUrl = canvas.toDataURL('image/jpeg');
+
+            fetch('/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: dataUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultDiv.innerHTML = `Result: ${data.result}`;
+            })
+            .catch(err => {
+                console.error('Error uploading image: ', err);
+            });
+        });
+    </script>
+</body>
+</html>
